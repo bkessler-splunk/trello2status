@@ -93,7 +93,8 @@ def getdata(api_token,api_key,command):
 
 
     for bid in b_json:
-        si.outputStreamResults(operation["funct"](operation["run"].replace("_BID_",bid["id"]),operation["source"],bid["name"]))
+        if not bid['prefs']['isTemplate']:
+            si.outputStreamResults(operation["funct"](operation["run"].replace("_BID_",bid["id"]),operation["source"],bid["name"]))
         #operation["funct"](operation["run"].replace("_BID_",bid["id"]),operation["source"],bid["name"])
 
 def dump(run,source,boardname):
