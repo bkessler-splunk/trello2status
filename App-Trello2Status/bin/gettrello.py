@@ -8,8 +8,6 @@ import sys
 from splunk import rest
 import splunk.entity as entity
 
-# The script itself is considered sys.argv[0] so we use sys.argv[1] to identify the user argument to the command.
-# We're going to take the user argument and pass it as the desired URI segment to the Git API
 def debug(str):
     results=[]
     row={}
