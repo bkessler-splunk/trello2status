@@ -3,7 +3,9 @@
 <row><panel><html>
   <p><b>Version 0.0.0.0.0.1</b></p>
   
-  <ul><li><p>Fill in the API KEY and API TOKEN in local/trello.conf. You can also specify them in the |gettrello command args</p></li>
+  <ul>
+  <li><p>https://trello.com/app-key</p></li>
+  <li><p>Fill in the API KEY and API TOKEN in local/trello.conf. You can also specify them in the |gettrello command args</p></li>
   <li><p>Update the TrelloEmail.csv lookup to include your specific email groups for each account/board.</p></li>
   <li><p>The Meeting Notes function looks for a list "Sync Meeting Notes" and pulls the latest card.</p></li>
   <li><p>Feel free to update the email text in the XML to suit your needs.</p></li>
