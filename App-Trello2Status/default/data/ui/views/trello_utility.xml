@@ -41,7 +41,7 @@
     <latest>now</latest>
   </search>
   <search base="base" id="filterbase">
-    <query>| search boardname="$t_board$"</query>
+    <query>$t_old$| search boardname="$t_board$"</query>
   </search>
   <search base="output">
     <query>| search Field="Body"</query>
@@ -76,6 +76,11 @@
       <change>
         <unset token="form.t_to"></unset>
       </change>
+    </input>
+    <input type="dropdown" token="t_old" searchWhenChanged="true">
+      <label>Filter</label>
+      <choice value="| noop">None</choice>
+      <choice value="| where _time&gt;relative_time(now(),&quot;-1w@w&quot;)">1w@w</choice>
     </input>
     <input type="multiselect" token="t_list" searchWhenChanged="true" id="resized_input2">
       <label>List</label>
@@ -143,7 +148,7 @@
 }.splunk-radiogroup label {
   padding-right: 5px;
 }          #input_link_split_by.input-link{
-            width: 520px !important;
+            width: 620px !important;
           }           .fieldset .input{
            width:auto !important;
            }
