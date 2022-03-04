@@ -26,7 +26,6 @@ creds="MISSING"
 
 for arg in sys.argv[1:]:
     args[arg.split("=")[0].lower()]=arg.split("=")[1]
-# TODO: Make it default to command and to creds
 
 api_token = args['token'] if 'token' in args.keys() else "MISSING"
 api_key = args['key'] if 'key' in args.keys() else "MISSING"
