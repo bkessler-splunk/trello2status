@@ -167,8 +167,8 @@
 | eval Desc=mvjoin(Desc,""), Desc="
 ".listname."".Desc 
 | stats values(Desc) as Desc 
-| rex mode=sed field=Desc "s/╔/\n       •/g" 
-| rex mode=sed field=Desc "s/╩/\n    -/g"
+| rex mode=sed field=Desc "s/╔/\n           •/g" 
+| rex mode=sed field=Desc "s/╩/\n      -/g"
 | rex mode=sed field=Desc "s/╠/\n  •/g"| eval Desc=mvjoin(Desc,"
 ")
 | strcat "$greeting$" "
@@ -186,8 +186,8 @@
             <set token="t_label">labels="*"</set>
             <set token="emailtype">| stats latest(name) as name latest(Desc) as Desc values(labels) as labels by boardname listname</set>
             <set token="emailcode">| eval Desc="╠".name."╩".Desc 
-| rex mode=sed field=Desc "s/╔/\n       •/g" 
-| rex mode=sed field=Desc "s/╩/\n    -/g"
+| rex mode=sed field=Desc "s/╔/\n           •/g" 
+| rex mode=sed field=Desc "s/╩/\n      -/g"
 | rex mode=sed field=Desc "s/╠/\n  •/g"| mvcombine delim="" Desc 
 
 | strcat "$greeting$" "
