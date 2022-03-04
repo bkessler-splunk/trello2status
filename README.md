@@ -1,6 +1,7 @@
 # trello2status
 Scrapes Trello Data into Splunk Dashboard for emailing status and meeting notes
 
+https://trello.com/app-key
 
 Version 0.0.0.0.0.1
 
