@@ -7,6 +7,22 @@
     <set token="greeting">Team,</set>
     <set token="footer">Thanks,</set>
     <set token="meetingstart">Here are the meeting notes for $t_now$:</set>
+    <set token="emailcode">| eval Desc="╠".name."╩".Desc 
+| stats values(Desc) as Desc by listname 
+| eval Desc=mvjoin(Desc,""), Desc="
+".listname."".Desc 
+| stats values(Desc) as Desc 
+| rex mode=sed field=Desc "s/╔/\n           •/g" 
+| rex mode=sed field=Desc "s/╩/\n      -/g"
+| rex mode=sed field=Desc "s/╠/\n  •/g"| eval Desc=mvjoin(Desc,"
+")
+| strcat "$greeting$" "
+
+" "$statusstart$" "
+" Desc "
+
+" "$footer$" "
+" "$t_name$" Body | fields Body</set>
     <!--set token="t_name">$env:user_realname$</set-->
   </init>
   <search id="base">
@@ -81,12 +97,15 @@
       <label>Filter</label>
       <choice value="| noop">None</choice>
       <choice value="| where _time&gt;relative_time(now(),&quot;-1w@w&quot;)">1w@w</choice>
+      <choice value="| where _time&gt;relative_time(now(),&quot;-1h@h&quot;)">1h@h</choice>
+      <default>| noop</default>
+      <initialValue>| noop</initialValue>
     </input>
     <input type="multiselect" token="t_list" searchWhenChanged="true" id="resized_input2">
       <label>List</label>
       <fieldForLabel>listname</fieldForLabel>
       <fieldForValue>listname</fieldForValue>
-      <search base="filterbase">
+      <search base="base">
         <query>| stats count by listname</query>
       </search>
       <prefix>(</prefix>
@@ -101,7 +120,7 @@
       <label>Label</label>
       <fieldForLabel>labels</fieldForLabel>
       <fieldForValue>labels</fieldForValue>
-      <search base="filterbase">
+      <search base="base">
         <query>|  stats count by labels</query>
       </search>
       <prefix>(</prefix>
@@ -166,7 +185,6 @@
           <condition value="Status Report">
             <set token="emailtype">|noop</set>
             <unset token="form.t_list"></unset>
-            <eval token="t_now">strftime(now(),"%b %d %Y")</eval>
             <set token="emailcode">| eval Desc="╠".name."╩".Desc 
 | stats values(Desc) as Desc by listname 
 | eval Desc=mvjoin(Desc,""), Desc="
@@ -186,7 +204,6 @@
           </condition>
           <condition value="Meeting Notes">
             <set token="form.t_list">Sync Meeting Notes</set>
-            <eval token="t_now">strftime(now(),"%b %d %Y")</eval>
             <set token="form.t_label">All</set>
             <set token="t_label">labels="*"</set>
             <set token="emailtype">| stats latest(name) as name latest(Desc) as Desc values(labels) as labels by boardname listname</set>
