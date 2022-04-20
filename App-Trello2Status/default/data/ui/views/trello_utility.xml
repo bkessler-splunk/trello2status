@@ -33,11 +33,14 @@
     | eval _time=strptime(date, "%Y-%m-%dT%H:%M:%S") 
     | stats latest(data.text) as latestcomment by data.card.id 
     | rename data.card.id as id] 
-| stats values(desc) as Desc values(labels.name) as labels values(latestcomment) as latestcomment by boardname listname  name _time | fillnull value="NONE" latestcomment 
+| stats values(desc) as Desc values(labels.name) as labels values(latestcomment) as latestcomment by boardname listname  name _time | fillnull value="NONE" latestcomment | makemv latestcomment delim="
+" 
+| eval latestcomment=mvfilter(match(latestcomment ,"\S*")), latestcomment=mvfilter(!match(latestcomment ,"^\!"))  |  eval latestcomment=mvjoin(latestcomment,"╔")
+
 | rex mode=sed field=Desc "s/\n$//g" 
 | rex mode=sed field=Desc "s/\n/╩/g" 
 | eval Desc = if(match(latestcomment,"NONE"), Desc,Desc."╔".latestcomment) 
-| fillnull value="None" labels 
+| fillnull value="None" labels | fillnull value="" Desc
         </query>
     <earliest>@d</earliest>
     <latest>now</latest>
