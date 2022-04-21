@@ -21,6 +21,8 @@ SEND EMAIL will use mailto: to open your preferred email tool. From there you ca
 
 If you put a ! at the beginning of a line in a card comment, it will be removed from the email as a comment for you
 
+There is a company slack channel for this. Reach out to me for access
+
 SEND EMAIL has a max char limit, and will alert you if you simply need to copy the email text over to the new email.
 
 Still ironing out some token logic. If a token is not resolving, toggle it between Status and Meeting Notes and back, usually fixes it
