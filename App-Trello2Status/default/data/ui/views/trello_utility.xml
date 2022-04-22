@@ -39,7 +39,7 @@
 
 | rex mode=sed field=Desc "s/\n$//g" 
 | rex mode=sed field=Desc "s/\n/╩/g" 
-| eval Desc = if(match(latestcomment,"NONE"), Desc,Desc."╔".latestcomment) 
+| eval Desc = if(match(latestcomment,"NONE") OR isnull(latestcomment), Desc,Desc."╔".latestcomment) 
 | fillnull value="None" labels | fillnull value="" Desc
         </query>
     <earliest>@d</earliest>
