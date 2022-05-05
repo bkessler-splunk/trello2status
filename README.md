@@ -3,7 +3,7 @@ Scrapes Trello Data into Splunk Dashboard for emailing status and meeting notes
 
 https://trello.com/app-key
 
-Version 0.0.0.0.0.1
+Version 0.5
 
 Fill in the API KEY and API TOKEN in local/trello.conf. You can also specify them in the |gettrello command args
 
