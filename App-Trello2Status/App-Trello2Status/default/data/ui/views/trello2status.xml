@@ -1,0 +1,302 @@
+<form theme="dark">
+  <label>Trello2Status Basic</label>
+  <init>
+    <eval token="t_now">strftime(now(),"%b %d %Y")</eval>
+    <set token="t_label">*</set>
+    <set token="statusstart">Here is the weekly status report for $t_now$:</set>
+    <set token="greeting">Team,</set>
+    <set token="footer">Thanks,</set>
+    <set token="meetingstart">Here are the meeting notes for $t_now$:</set>
+    <set token="emailcode">| eval Desc="╠".name."╩".Desc
+| stats values(Desc) as Desc by listname
+| eval Desc=mvjoin(Desc,""), Desc="
+".listname."".Desc
+| stats values(Desc) as Desc
+| rex mode=sed field=Desc "s/╔/\n           •/g"
+| rex mode=sed field=Desc "s/╩/\n      -/g"
+| rex mode=sed field=Desc "s/╠/\n  •/g"| eval Desc=mvjoin(Desc,"
+")
+| strcat "$greeting$" "
+
+" "$statusstart$" "
+" Desc "
+
+" "$footer$" "
+" "$t_name$" Body | fields Body</set>
+    <!--set token="t_name">$env:user_realname$</set-->
+  </init>
+  <search id="base">
+    <query>| gettrello | eval _time=strptime(dateLastActivity, "%Y-%m-%dT%H:%M:%S")
+| join type=left id
+    [| gettrello  command=actions
+    | search type=commentCard
+    | eval _time=strptime(date, "%Y-%m-%dT%H:%M:%S")
+    | stats latest(data.text) as latestcomment by data.card.id
+    | rename data.card.id as id]
+| stats values(desc) as Desc values(labels.name) as labels values(latestcomment) as latestcomment by boardname listname  name _time | fillnull value="NONE" latestcomment Desc | makemv latestcomment delim="
+"
+| eval latestcomment=mvfilter(match(latestcomment ,"\S*")), latestcomment=mvfilter(!match(latestcomment ,"^\!"))  |  eval latestcomment=mvjoin(latestcomment,"╔")
+
+| rex mode=sed field=Desc "s/\n$//g"
+| rex mode=sed field=Desc "s/\n/╩/g"
+| eval Desc = if(match(latestcomment,"NONE") OR isnull(latestcomment), Desc,Desc."╔".latestcomment)
+| fillnull value="None" labels | fillnull value="" Desc| rex mode=sed field=Desc "s/NONE╔//g"
+        </query>
+    <earliest>@d</earliest>
+    <latest>now</latest>
+  </search>
+  <search>
+    <query>
+    | rest /services/authentication/current-context splunk_server=local
+| table realname
+  </query>
+    <done>
+      <set token="t_name">$result.realname$</set>
+    </done>
+  </search>
+  <search id="email">
+    <query>|inputlookup TrelloEmail.csv where Account="$t_board$" OR Account="All"</query>
+    <earliest>@d</earliest>
+    <latest>now</latest>
+  </search>
+  <search base="base" id="filterbase">
+    <query>$t_old$| search boardname="$t_board$"</query>
+  </search>
+  <search base="output">
+    <query>| search Field="Body"</query>
+    <done>
+      <set token="body">$result.Value$</set>
+      <eval token="len">len($result.Value$)</eval>
+      <eval token="showb">if(len($result.Value$)&gt;3500,"true",NULL)</eval>
+      <eval token="shown">if(len($result.Value$)&lt;3501,"true",NULL)</eval>
+    </done>
+  </search>
+  <search base="output">
+    <query>| search Field="Subject"</query>
+    <done>
+      <set token="subject">$result.Value$</set>
+    </done>
+  </search>
+  <search base="filterbase" id="emailbase">
+    <query>| search $t_list$ $t_label$ $emailtype$</query>
+  </search>
+  <fieldset submitButton="false">
+    <input type="link" token="t_board" id="input_link_split_by">
+      <label>Board</label>
+      <fieldForLabel>name</fieldForLabel>
+      <fieldForValue>name</fieldForValue>
+      <search>
+        <done>
+          <eval token="t_now">strftime(now(),"%b %d %Y")</eval>
+          <set token="t_label">*</set>
+        </done>
+        <query>| gettrello command=boards | search closed=False |  stats count by name</query>
+      </search>
+      <change>
+        <unset token="form.t_to"></unset>
+      </change>
+    </input>
+    <input type="dropdown" token="t_old" searchWhenChanged="true">
+      <label>Filter</label>
+      <choice value="| noop">None</choice>
+      <choice value="| where _time&gt;relative_time(now(),&quot;-1w@w&quot;)">1w@w</choice>
+      <choice value="| where _time&gt;relative_time(now(),&quot;-1h@h&quot;)">1h@h</choice>
+      <default>| noop</default>
+      <initialValue>| noop</initialValue>
+    </input>
+    <input type="multiselect" token="t_list" searchWhenChanged="true" id="resized_input2">
+      <label>List</label>
+      <fieldForLabel>listname</fieldForLabel>
+      <fieldForValue>listname</fieldForValue>
+      <search base="base">
+        <query>| stats count by listname</query>
+      </search>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <valuePrefix>listname="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter> OR </delimiter>
+      <default>In Progress</default>
+      <initialValue>In Progress</initialValue>
+    </input>
+    <input type="multiselect" token="t_label" searchWhenChanged="true" id="resized_input3">
+      <label>Label</label>
+      <fieldForLabel>labels</fieldForLabel>
+      <fieldForValue>labels</fieldForValue>
+      <search base="base">
+        <query>|  stats count by labels</query>
+      </search>
+      <prefix>(</prefix>
+      <suffix>)</suffix>
+      <valuePrefix>labels="</valuePrefix>
+      <valueSuffix>"</valueSuffix>
+      <delimiter>OR </delimiter>
+      <choice value="*">All</choice>
+      <default>*</default>
+      <initialValue>*</initialValue>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html depends="$alwaysHideCSSStylePanel$">
+       <style>
+          #resized_input div[data-component="splunk-core:/splunkjs/mvc/components/MultiDropdown"]{
+              width: 1500px !important;
+            }
+
+          #resized_input div[data-view="splunkjs/mvc/multidropdownview"]{
+              width: 1500px !important;
+              margin-right: auto !important;
+            }
+
+            #resized_input2 div[data-component="splunk-core:/splunkjs/mvc/components/MultiDropdown"]{
+              width: 500px !important;
+            }
+
+          #resized_input2 div[data-view="splunkjs/mvc/multidropdownview"]{
+              width: 500px !important;
+              margin-right: auto !important;
+            }
+                        #resized_input3 div[data-component="splunk-core:/splunkjs/mvc/components/MultiDropdown"]{
+              width: 500px !important;
+            }
+
+          #resized_input3 div[data-view="splunkjs/mvc/multidropdownview"]{
+              width: 500px !important;
+              margin-right: auto !important;
+            }
+            #exampleRadioId div {
+  flex-flow: row wrap;
+}.splunk-radiogroup label {
+  padding-right: 5px;
+}          #input_link_split_by.input-link{
+            width: 620px !important;
+          }           .fieldset .input{
+           width:auto !important;
+           }
+       </style>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <input type="radio" token="t_type" id="exampleRadioId">
+        <label>Email Type</label>
+        <choice value="Status Report">Status Report</choice>
+        <choice value="Meeting Notes">Meeting Notes</choice>
+        <change>
+          <condition value="Status Report">
+            <set token="emailtype">|noop</set>
+            <unset token="form.t_list"></unset>
+            <set token="emailcode">| eval Desc="╠".name."╩".Desc
+| stats values(Desc) as Desc by listname
+| eval Desc=mvjoin(Desc,""), Desc="
+".listname."".Desc
+| stats values(Desc) as Desc
+| rex mode=sed field=Desc "s/╔/\n           •/g"
+| rex mode=sed field=Desc "s/╩/\n      -/g"
+| rex mode=sed field=Desc "s/╠/\n  •/g"| eval Desc=mvjoin(Desc,"
+")
+| strcat "$greeting$" "
+
+" "$statusstart$" "
+" Desc "
+
+" "$footer$" "
+" "$t_name$" Body | fields Body</set>
+          </condition>
+          <condition value="Meeting Notes">
+            <set token="form.t_list">Sync Meeting Notes</set>
+            <set token="form.t_label">All</set>
+            <set token="t_label">labels="*"</set>
+            <set token="emailtype">| stats latest(name) as name latest(Desc) as Desc values(labels) as labels by boardname listname</set>
+            <set token="emailcode">| eval Desc="╠".name."╩".Desc
+| rex mode=sed field=Desc "s/╔/\n           •/g"
+| rex mode=sed field=Desc "s/╩/\n      -/g"
+| rex mode=sed field=Desc "s/╠/\n  •/g"| mvcombine delim="" Desc
+
+| strcat "$greeting$" "
+
+" "$meetingstart$" "
+" Desc "
+
+" "$footer$" "
+" "$t_name$" Body | fields Body</set>
+          </condition>
+        </change>
+        <default>Status Report</default>
+        <initialValue>Status Report</initialValue>
+      </input>
+      <input type="multiselect" token="t_to" id="resized_input" searchWhenChanged="true">
+        <label>Email To</label>
+        <delimiter>, </delimiter>
+        <fieldForLabel>Name</fieldForLabel>
+        <fieldForValue>Email</fieldForValue>
+        <search base="email">
+          <query/>
+        </search>
+      </input>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <search base="emailbase" id="output">
+          <query>$emailcode$
+| eval To="$t_to$"
+| eval Subject="$t_type$".": "."$t_now$"
+| transpose
+| rename column as Field "row 1" as Value
+| sort - Field</query>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel depends="$shown$">
+      <single>
+        <search>
+          <query>| makeresults
+| eval message="Send Email"</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">mailto:$t_to$?subject=$subject$&amp;&amp;body=$body$</link>
+        </drilldown>
+      </single>
+    </panel>
+    <panel depends="$showb$">
+      <single>
+        <search>
+          <query>| makeresults
+| eval message="Send Email"</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+        </search>
+        <option name="drilldown">all</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="underLabel">Body Too Big: Copy and Paste</option>
+        <drilldown>
+          <link target="_blank">mailto:$t_to$?subject=$subject$&amp;&amp;body=PASTE BODY</link>
+          <set token="show">true</set>
+        </drilldown>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html> <p style="text-align:center;">
+   <span style="float:left;">  Chose a board, list, label and email group. Must select one of each to start.</span> $t_board$ <span style="float:right;">Live Data || For support contact <a href="slack://user?team=T024FQ3UW&amp;id=WAZ6WJYGN">Brian Kessler</a>
+          </span>
+</p>
+      </html>
+    </panel>
+  </row>
+</form>
