@@ -25,7 +25,9 @@ There is a company slack channel for this. Reach out to me for access
 
 [BASIC] SEND EMAIL has a max char limit, and will alert you if you simply need to copy the email text over to the new email.
 
-Still ironing out some token logic. If a token is not resolving, toggle it between Status and Meeting Notes and back, usually fixes it
+[ALL] Still ironing out some token logic due to splunk bug. If a token is not resolving, toggle it between Status and Meeting Notes and back, usually fixes it
+
+[HTML]Email will be sent, so be connected to company network for SMTP to function
 
 |gettrello
 
