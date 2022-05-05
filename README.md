@@ -9,21 +9,21 @@ Fill in the API KEY and API TOKEN in local/trello.conf. You can also specify the
 
 Update the TrelloEmail.csv lookup to include your specific email groups for each account/board.
 
-The Meeting Notes function looks for a list "Sync Meeting Notes" and pulls the latest card.
+[BASIC] The Meeting Notes function looks for a list "Sync Meeting Notes" and pulls the latest card.
 
 Feel free to update the email text in the XML to suit your needs.
 
 Data is pulled in live, so refreshing the Dashboard will pull an updated data set from Trello
 
-You MUST select at least one email group for the dashboard to start showing sample email
+[BASIC] You MUST select at least one email group for the dashboard to start showing sample email
 
-SEND EMAIL will use mailto: to open your preferred email tool. From there you can review and make any changes. You can also update the trello board with changes and refresh to get the change.
+[BASIC] SEND EMAIL will use mailto: to open your preferred email tool. From there you can review and make any changes. You can also update the trello board with changes and refresh to get the change.
 
-If you put a ! at the beginning of a line in a card comment, it will be removed from the email as a comment for you
+[BASIC] If you put a ! at the beginning of a line in a card comment, it will be removed from the email as a comment for you
 
 There is a company slack channel for this. Reach out to me for access
 
-SEND EMAIL has a max char limit, and will alert you if you simply need to copy the email text over to the new email.
+[BASIC] SEND EMAIL has a max char limit, and will alert you if you simply need to copy the email text over to the new email.
 
 Still ironing out some token logic. If a token is not resolving, toggle it between Status and Meeting Notes and back, usually fixes it
 
