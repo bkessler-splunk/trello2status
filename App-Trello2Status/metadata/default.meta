@@ -1,0 +1,25 @@
+[views/readme]
+owner = admin
+version = 8.2.5
+modtime = 1646322399.914704000
+
+[nav/default]
+version = 8.2.5
+modtime = 1646852937.062310000
+
+[]
+access = read : [ * ], write : [ * ]
+version = 8.2.5
+modtime = 1646325081.386464000
+
+[views/trello2status2]
+version = 8.2.6
+modtime = 1650660269.421055000
+
+[lookups/TrelloEmail.csv]
+version = 8.2.6
+modtime = 1648821486.220325000
+
+[views/trello2status]
+version = 8.2.6
+modtime = 1646855914.059632000
