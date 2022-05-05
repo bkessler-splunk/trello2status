@@ -1,4 +1,5 @@
 <nav search_view="search" color="#65A637">
-<view name="trello_utility" default="true" />
+<view name="trello2status" default="true" />
+<view name="trello2status2"/>
 <view name="readme"/>
 </nav>
