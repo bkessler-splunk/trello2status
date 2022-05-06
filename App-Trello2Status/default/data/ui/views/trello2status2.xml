@@ -31,7 +31,7 @@
       <set token="t_sstatus">Sent?</set>
       <unset token="t_sending"></unset>
     </error>
-    <query>| makeresults $t_sending$  | sendhemail to="bkessler@splunk.com" format=html subject="$subject$"  server="mail.sv.splunk.com" message="$tokHTML$" footer="Splunk&gt; Assigned Experts" from="Brian Kessler &lt;bkessler@splunk.com&gt;"
+    <query>| makeresults $t_sending$  | sendhemail to="$t_to$" format=html subject="$subject$"  server="mail.sv.splunk.com" message="$tokHTML$" footer="Splunk&gt; Assigned Experts" from="$t_femail$"
 |  stats count</query>
     <earliest>$earliest$</earliest>
     <latest>$latest$</latest>
@@ -217,8 +217,7 @@
           <query/>
         </search>
         <suffix>,</suffix>
-        <default>bkessler@splunk.com</default>
-        <initialValue>bkessler@splunk.com</initialValue>
+
       </input>
       <html>
         <style>
