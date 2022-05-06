@@ -6,7 +6,8 @@
     <set token="tokComment">Hi Team,
 
     Here is this weeks $t_type$ for $t_now$. Please reach out with questions.</set>
-    <set token="t_sstatus">Will actually send the email!</set><set token="tokHTML">Loading...</set>
+    <set token="t_sstatus">Will actually send the email!</set>
+    <set token="tokHTML">Loading...</set>
   </init>
   <search>
     <query>
@@ -15,7 +16,8 @@
   </query>
     <done>
       <set token="t_name">$result.realname$</set>
-      <set token="t_femail">$result.email$</set>
+      <set token="t_femail">$t_name$&lt;$result.email$&gt;</set>
+      <eval token="t_now">strftime(now(),"%b %d %Y")</eval>
     </done>
   </search>
   <search>
@@ -38,6 +40,10 @@
   </search>
   <search id="email">
     <query>|inputlookup TrelloEmail.csv where Account="$t_board$" OR Account="All" | append [|makeresults | eval Name="AE", Email="$t_femail$"]</query>
+    <done>
+      <set token="form.t_to">$t_femail$</set>
+      <set token="t_to">$t_femail$</set>
+    </done>
     <earliest>@d</earliest>
     <latest>now</latest>
   </search>
@@ -216,8 +222,6 @@
         <search base="email">
           <query/>
         </search>
-        <suffix>,</suffix>
-
       </input>
       <html>
         <style>
@@ -265,7 +269,7 @@ tr:nth-child(odd) {
             <td>Header</td>
             <td>$tokComment$</td> </tr>                <tr>
             <td>From</td>
-            <td>$t_name$ &lt;$t_femail$&gt;</td> </tr>
+            <td>$t_femail$</td> </tr>
         </table>
       </html>
       <single>
