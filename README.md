@@ -27,7 +27,15 @@ There is a company slack channel for this. Reach out to me for access
 
 [ALL] Still ironing out some token logic due to splunk bug. If a token is not resolving, toggle it between Status and Meeting Notes and back, usually fixes it
 
-[HTML]Email will be sent, so be connected to company network for SMTP to function
+[HTML] Email will be sent, so be connected to company network for SMTP to function
+
+[HTML] Uses labels as Business Goals, and list as status. Must have both defined.
+
+[HTML] Lists: Items to Bring Up, In Progress, Holding, Blocked and Complete will trigger sorting. All others will go to bottom.
+
+[HTML] Lables: Concerns and Observations, Actions Items, and Meeting, will trigger sorting. All others will go to above.
+
+
 
 |gettrello
 
