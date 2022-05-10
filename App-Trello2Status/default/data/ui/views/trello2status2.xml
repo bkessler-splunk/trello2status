@@ -303,14 +303,4 @@ tr:nth-child(odd) {
       </html>
     </panel>
   </row>
-  <row>
-    <panel>
-      <table>
-        <search base="output">
-
-        </search>
-        <option name="drilldown">none</option>
-      </table>
-    </panel>
-  </row>
 </form>
