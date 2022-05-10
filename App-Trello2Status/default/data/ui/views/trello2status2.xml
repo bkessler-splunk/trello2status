@@ -60,16 +60,16 @@
     </done>
   </search>
   <search base="filterbase" id="emailbase">
-    <query>| search $t_list$ OR listname="Account" $t_label$</query>
+    <query>| search $t_list$ OR  $t_label$</query>
   </search>
   <search base="emailbase" id="output">
     <done>
       <set token="tokHTML">$result.body$</set>
     </done>
-    <query>| stats values(body) as body by labels
+    <query>| stats list(body) as body by labels
 | strcat "&lt;h2&gt;&lt;u&gt;" labels "&lt;/u&gt;&lt;/h2&gt;" labels
 | eval body=mvjoin(body,"&lt;br&gt;"), body=labels.body
-| eval rank=case(match(labels,".*Action Items.*"), 5,match(labels,".*Business Priorities.*"), 1, match(labels,".*Concerns and Observations.*"), 6, true(), 3)
+| eval rank=case(match(labels,".*Action Items.*"),5, match(labels,".*Meeting.*"),6,match(labels,".*Business Priorities.*"), 1, match(labels,".*Concerns and Observations.*"), 6, true(), 3)
 | sort rank
 | stats list(body) as body
 | eval body=mvjoin(body,"&lt;br&gt;") | rex mode=sed field=body "s/&lt;br&gt;&lt;br&gt;/&lt;br&gt;/g"
@@ -83,7 +83,8 @@
 | eval _time=strptime(dateLastActivity, "%Y-%m-%dT%H:%M:%S")
 
 | stats values(desc) as Desc latest(labels.name) as labels list(actions.data.text) as latestcomment by boardname listname name _time
-|  eval latestcomment=mvindex(latestcomment,0)| eval listname2=case(listname=="Complete", " :: &lt;span style=\"color:green;\"&gt;".listname."&lt;/span&gt;",listname=="Holding", " :: &lt;span style=\"color:orange;\"&gt;".listname."&lt;/span&gt;",listname=="In Progress", " :: &lt;span style=\"color:blue;\"&gt;".listname."&lt;/span&gt;",listname=="Blocked", " :: &lt;span style=\"color:red;\"&gt;".listname."&lt;/span&gt;"), latestcomment="&lt;i&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;-".latestcomment."&lt;/i&gt;"
+|  eval latestcomment=mvindex(latestcomment,0)| eval rank=case(listname=="Complete",4,listname=="Holding",3,listname=="In Progress",2,listname=="Blocked",0,listname=="Items to Bring Up",1, true(),9) 
+| eval listname2=case(listname=="Complete", " :: &lt;span style=\"color:green;\"&gt;".listname."&lt;/span&gt;",listname=="Holding", " :: &lt;span style=\"color:orange;\"&gt;".listname."&lt;/span&gt;",listname=="In Progress", " :: &lt;span style=\"color:blue;\"&gt;".listname."&lt;/span&gt;",listname=="Blocked", " :: &lt;span style=\"color:red;\"&gt;".listname."&lt;/span&gt;",listname=="Items to Bring Up", " :: &lt;span style=\"color:purple;\"&gt;".listname."&lt;/span&gt;"), latestcomment="&lt;i&gt;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;-".latestcomment."&lt;/i&gt;"|  sort rank
 | rex mode=sed field=name "s/:/-/g"
 | strcat "&lt;b&gt;" name "&lt;/b&gt;" listname2 "&lt;br&gt;" Desc "&lt;br&gt;" latestcomment body</query>
   </search>
@@ -203,8 +204,7 @@
         <fieldForLabel>listname</fieldForLabel>
         <fieldForValue>listname</fieldForValue>
         <search base="base">
-          <query>| stats count by listname
-|  where listname!="Account"</query>
+          <query>| stats count by listname</query>
         </search>
         <prefix>(</prefix>
         <suffix>)</suffix>
@@ -301,6 +301,16 @@ tr:nth-child(odd) {
           </span>
 </p>
       </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <search base="output">
+
+        </search>
+        <option name="drilldown">none</option>
+      </table>
     </panel>
   </row>
 </form>
