@@ -60,7 +60,7 @@
     </done>
   </search>
   <search base="filterbase" id="emailbase">
-    <query>| search $t_list$ OR  $t_label$</query>
+    <query>| search $t_list$ AND  $t_label$</query>
   </search>
   <search base="emailbase" id="output">
     <done>
