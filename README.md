@@ -35,6 +35,7 @@ There is a company slack channel for this. Reach out to me for access
 
 [HTML] Lables: Concerns and Observations, Actions Items, and Meeting, will trigger sorting. All others will go to above.
 
+[180] Meeting and Internal labels ignored in this mode
 
 
 |gettrello
