@@ -13,6 +13,7 @@
   <li><p>[BASIC]SEND EMAIL has a max char limit, and will alert you if you simply need to copy the email text over to the new email.</p></li>
   <li><p>[ALL]Still ironing out some token logic. If a token is not resolving, toggle it between Status and Meeting Notes and back, usually fixes it</p></li>
   <li><p>[HTML]Email will be sent, so be connected to company network for SMTP to function</p></li>
+  <li><p>[180]Meeting label will be ignored, as will Internal</p></li>
 
   </ul>
   <p style="color:red;">|gettrello</p>
