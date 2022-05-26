@@ -1,5 +1,5 @@
 <nav search_view="search" color="#65A637">
 <view name="trello2status" default="true" />
-<view name="trello2status2"/>
+<view name="trello2status2"/><view name="180_day_checkpoint"/>
 <view name="readme"/>
 </nav>
