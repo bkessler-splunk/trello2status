@@ -1,0 +1,142 @@
+<form theme="dark" script="convert_token_to_html.js, html_text_area_input.js">
+  <label>180 Day Checkpoint</label>
+  <init>
+    <eval token="t_now">strftime(now(),"%b %d %Y")</eval>
+    <set token="t_label">*</set>
+    <set token="tokComment">180 Day Checkpoint: $t_now$</set>
+    <set token="tokHTML">Loading...</set>
+  </init>
+  <search>
+    <query>
+    | rest /services/authentication/current-context splunk_server=local
+| table realname email
+  </query>
+    <done>
+      <set token="t_name">$result.realname$</set>
+      <eval token="t_now">strftime(now(),"%b %d %Y")</eval>
+    </done>
+  </search>
+  <search base="base" id="filterbase">
+    <query>| where _time&gt;relative_time(now(),"-180d@d") | search boardname="$t_board$"</query>
+  </search>
+  <search base="output">
+    <query>| search Field="Body"</query>
+    <done>
+      <set token="body">$result.Value$</set>
+    </done>
+  </search>
+  <search base="filterbase" id="emailbase">
+    <query>| search labels!="Meeting" labels!="Internal"</query>
+  </search>
+  <search base="emailbase" id="output">
+    <done>
+      <set token="tokHTML">$result.body$</set>
+    </done>
+    <query>| stats list(body) as body by labels
+| strcat "&lt;h2&gt;&lt;u&gt;" labels "&lt;/u&gt;&lt;/h2&gt;" labels
+| eval body=mvjoin(body,"&lt;br&gt;"), body=labels.body
+| eval rank=case(match(labels,".*Action Items.*"),5, match(labels,".*Meeting.*"),6,match(labels,".*Business Priorities.*"), 1, match(labels,".*Concerns and Observations.*"), 6, true(), 3)
+| sort rank
+| stats list(body) as body
+| eval body=mvjoin(body,"&lt;br&gt;") | rex mode=sed field=body "s/&lt;br&gt;&lt;br&gt;/&lt;br&gt;/g"
+
+| eval header="$tokComment$"
+| rex mode=sed field=header "s/\n/&lt;br&gt;/g"
+| strcat header "&lt;h1&gt;Business Priorities&lt;/h1&gt;" body body</query>
+  </search>
+  <search id="base">
+    <query>| gettrello 
+| eval _time=strptime(dateLastActivity, "%Y-%m-%dT%H:%M:%S") 
+| stats values(desc) as Desc latest(labels.name) as labels list(actions.data.text) as latestcomment by boardname listname name _time 
+| eval rank=case(listname=="Complete",4,listname=="Holding",3,listname=="In Progress",2,listname=="Blocked",0,listname=="Items to Bring Up",1, true(),9) 
+| eval listname2=case(listname=="Complete", "&lt;span style=\"color:green;\"&gt;".listname.":: &lt;/span&gt;",listname=="Holding", "&lt;span style=\"color:orange;\"&gt;".listname.":: &lt;/span&gt;",listname=="In Progress", "&lt;span style=\"color:blue;\"&gt;".listname."::&lt;/span&gt;",listname=="Blocked", "&lt;span style=\"color:red;\"&gt;".listname.":: &lt;/span&gt;",listname=="Items to Bring Up", "&lt;span style=\"color:purple;\"&gt;".listname.":: &lt;/span&gt;") 
+| sort rank 
+| rex mode=sed field=name "s/:/-/g" 
+| strcat  listname2 "&lt;b&gt;" name "&lt;/b&gt;" " :: " Desc "&lt;br&gt;" body</query>
+  </search>
+  <fieldset submitButton="false">
+    <input type="link" token="t_board" id="input_link_split_by">
+      <label>Board</label>
+      <fieldForLabel>name</fieldForLabel>
+      <fieldForValue>name</fieldForValue>
+      <search>
+        <done>
+          <eval token="t_now">strftime(now(),"%b %d %Y")</eval>
+          <set token="t_label">*</set>
+        </done>
+        <query>| gettrello command=boards | search closed=False |  stats count by name</query>
+      </search>
+      <change>
+        <unset token="form.t_to"></unset>
+      </change>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <html depends="$alwaysHideCSSStylePanel$">
+       <style>
+          #resized_input div[data-component="splunk-core:/splunkjs/mvc/components/MultiDropdown"]{
+              width: 400px !important;
+            }
+
+          #resized_input div[data-view="splunkjs/mvc/multidropdownview"]{
+              width: 400px !important;
+              margin-right: auto !important;
+            }
+
+            #resized_input2 div[data-component="splunk-core:/splunkjs/mvc/components/MultiDropdown"]{
+              width: 400px !important;
+            }
+
+          #resized_input2 div[data-view="splunkjs/mvc/multidropdownview"]{
+              width: 400px !important;
+              margin-right: auto !important;
+            }
+                        #resized_input3 div[data-component="splunk-core:/splunkjs/mvc/components/MultiDropdown"]{
+              width: 400px !important;
+            }
+
+          #resized_input3 div[data-view="splunkjs/mvc/multidropdownview"]{
+              width: 400px !important;
+              margin-right: auto !important;
+            }
+            #exampleRadioId div {
+  flex-flow: row wrap;
+}.splunk-radiogroup label {
+  padding-right: 5px;
+}          #input_link_split_by.input-link{
+            width: auto !important;
+          }
+          .fieldset .input{
+           width:auto !important;
+           }
+
+            #text5 .splunk-textinput input{
+            width: 1500px !important;
+            }
+
+             #p60{width:65% !important;}
+             #p40{width:35% !important;}
+
+       </style>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html>
+        <div id="htmlPanelWithToken">
+        </div>
+      </html>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <html> <p style="text-align:center;">
+   <span style="float:left;">Checkpoint</span>$t_board$<span style="float:right;">Live Data || For support contact <a href="slack://user?team=T024FQ3UW&amp;id=WAZ6WJYGN">Brian Kessler</a>
+          </span>
+</p>
+      </html>
+    </panel>
+  </row>
+</form>
