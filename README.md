@@ -1,7 +1,8 @@
 # trello2status
 Scrapes Trello Data into Splunk Dashboard for emailing status and meeting notes
 
-https://trello.com/app-key
+[Get Key/Token](https://trello.com/power-ups/admin)
+Make a powerup with any details. Generate Key, then click the link next to it to generate a token
 
 Version 0.5
 
